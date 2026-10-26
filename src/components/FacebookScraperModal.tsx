@@ -90,6 +90,11 @@ export const FacebookScraperModal: React.FC<FacebookScraperModalProps> = ({
   const [scrapingMode, setScrapingMode] = useState<'smart_cloud' | 'browser_stealth'>('smart_cloud');
   const [autoAnalyzeWithGemini, setAutoAnalyzeWithGemini] = useState<boolean>(true);
 
+  // New connection modes: Scraper, Graph API, or Copied Text/Comments Paste
+  const [modalTab, setModalTab] = useState<'scraper' | 'graph_api' | 'paste_raw'>('scraper');
+  const [fbAccessToken, setFbAccessToken] = useState<string>('');
+  const [rawPastedText, setRawPastedText] = useState<string>('');
+
   // Execution states
   const [isScraping, setIsScraping] = useState<boolean>(false);
   const [stepIndex, setStepIndex] = useState<number>(0);
@@ -108,6 +113,102 @@ export const FacebookScraperModal: React.FC<FacebookScraperModalProps> = ({
 
   const handleSelectGroup = (group: PopularGroup) => {
     setGroupUrl(group.url);
+  };
+
+  // Facebook Graph API direct fetcher
+  const handleGraphApiFetch = async () => {
+    if (!fbAccessToken.trim()) {
+      setErrorText('يرجى إدخال رمز الوصول Facebook Access Token');
+      return;
+    }
+    if (!groupUrl.trim()) {
+      setErrorText('يرجى إدخال رابط أو معرف مجموعة فيسبوك');
+      return;
+    }
+
+    setIsScraping(true);
+    setIsFinished(false);
+    setErrorText(null);
+    setLiveLogs([]);
+    setProgressPercent(20);
+
+    const appendLog = (msg: string) => {
+      setLiveLogs((prev) => [...prev, `${new Date().toLocaleTimeString('ar-EG')}: ${msg}`]);
+    };
+
+    appendLog('🔗 جاري الاتصال بـ Facebook Graph API واستدعاء المنشورات والتعليقات المباشرة...');
+
+    try {
+      const response = await fetch('/api/facebook/graph-fetch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accessToken: fbAccessToken.trim(),
+          groupIdOrUrl: groupUrl.trim(),
+          maxPosts,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'فشل الاتصال بـ Facebook Graph API');
+      }
+
+      setProgressPercent(100);
+      setScrapedResults(data.posts || []);
+      setIsFinished(true);
+      appendLog(`✨ تم استخراج (${data.posts?.length || 0}) منشور عقاري حقيقي واستخراج هواتف التعليقات بذكاء Gemini!`);
+    } catch (err: any) {
+      console.error(err);
+      setErrorText(err.message || 'خطأ في جلب البيانات من فيسبوك');
+      appendLog(`❌ خطأ: ${err.message}`);
+    } finally {
+      setIsScraping(false);
+    }
+  };
+
+  // Raw Copied Facebook Text/Comments Parser
+  const handleParseRawText = async () => {
+    if (!rawPastedText.trim()) {
+      setErrorText('يرجى لصق نصوص أو تعليقات المنشورات المنسوخة من فيسبوك أولاً');
+      return;
+    }
+
+    setIsScraping(true);
+    setIsFinished(false);
+    setErrorText(null);
+    setLiveLogs([]);
+    setProgressPercent(30);
+
+    const appendLog = (msg: string) => {
+      setLiveLogs((prev) => [...prev, `${new Date().toLocaleTimeString('ar-EG')}: ${msg}`]);
+    };
+
+    appendLog('📝 جاري تفكيك النصوص والتعليقات وتصنيف المنشورات العقارية واستخراج الموبايل...');
+
+    try {
+      const response = await fetch('/api/facebook/parse-raw', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rawContent: rawPastedText }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'فشل في تحليل النص المنسوخ');
+      }
+
+      setProgressPercent(100);
+      setScrapedResults(data.posts || []);
+      setIsFinished(true);
+      appendLog(`✨ تم تصفية (${data.posts?.length || 0}) منشور عقاري بأسعاره وهواتفه وتصنيف Gemini!`);
+    } catch (err: any) {
+      console.error(err);
+      setErrorText(err.message || 'خطأ في معالجة النص المنسوخ');
+      appendLog(`❌ خطأ: ${err.message}`);
+    } finally {
+      setIsScraping(false);
+    }
   };
 
   // Start the automatic scraping with smooth streaming logs & fallback
@@ -291,28 +392,161 @@ export const FacebookScraperModal: React.FC<FacebookScraperModalProps> = ({
             </div>
           </div>
 
-          {/* Step 1: Open Facebook & Select Target Group */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-200 flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">
-                  1
-                </span>
-                رابط مجموعة فيسبوك المراد سحب الإعلانات منها
-              </label>
+          {/* Connection Mode Selection Tabs */}
+          <div className="flex bg-slate-950 p-1.5 rounded-2xl border border-slate-800 gap-1.5 text-xs font-bold">
+            <button
+              type="button"
+              onClick={() => setModalTab('scraper')}
+              className={`flex-1 py-2 px-3 rounded-xl transition-all flex items-center justify-center gap-2 ${
+                modalTab === 'scraper'
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <span>🚀 السحب التلقائي والتعليقات</span>
+            </button>
 
-              {/* Direct Facebook Launcher */}
-              <button
-                type="button"
-                onClick={handleOpenFacebook}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 transition-all"
-                title="يفتح صفحة مجموعاتك في فيسبوك لتصفحها ونسخ رابط أي جروب"
-              >
-                <Globe className="w-3.5 h-3.5" />
-                <span>فتح صفحتي على فيسبوك 🌐</span>
-                <ExternalLink className="w-3 h-3" />
-              </button>
+            <button
+              type="button"
+              onClick={() => setModalTab('graph_api')}
+              className={`flex-1 py-2 px-3 rounded-xl transition-all flex items-center justify-center gap-2 ${
+                modalTab === 'graph_api'
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <span>🔗 الربط بـ Facebook Graph API</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setModalTab('paste_raw')}
+              className={`flex-1 py-2 px-3 rounded-xl transition-all flex items-center justify-center gap-2 ${
+                modalTab === 'paste_raw'
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <span>📋 لصق منشورات وتفريغ تعليقات</span>
+            </button>
+          </div>
+
+          {/* Mode 2: Facebook Graph API View */}
+          {modalTab === 'graph_api' && (
+            <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-5 space-y-4">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">
+                  🔑
+                </span>
+                <span>إدخال رمز الوصول للفيسبوك (Facebook User / Page Access Token)</span>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-400 block mb-1">
+                    رمز الوصول (Facebook Graph API Access Token):
+                  </label>
+                  <input
+                    type="password"
+                    value={fbAccessToken}
+                    onChange={(e) => setFbAccessToken(e.target.value)}
+                    placeholder="ضع كود Access Token الخاص بحسابك أو تطبيقك في فيسبوك هنا..."
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 font-mono focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-400 block mb-1">
+                    رابط الجروب أو معرف الجروب (Group ID):
+                  </label>
+                  <input
+                    type="text"
+                    value={groupUrl}
+                    onChange={(e) => setGroupUrl(e.target.value)}
+                    placeholder="https://www.facebook.com/groups/tagamo3.realestate.hub"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 font-mono focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleGraphApiFetch}
+                  disabled={isScraping}
+                  className="w-full py-3 rounded-xl text-xs font-black bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-900/30 transition-all flex items-center justify-center gap-2"
+                >
+                  <Play className="w-4 h-4 fill-current" />
+                  <span>جلب المنشورات المباشرة وتعليقاتها من فيسبوك الآن 🚀</span>
+                </button>
+              </div>
             </div>
+          )}
+
+          {/* Mode 3: Raw Copied Facebook Text & Comments View */}
+          {modalTab === 'paste_raw' && (
+            <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-5 space-y-4">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">
+                  📋
+                </span>
+                <span>لصق وتفنيط نصوص وتعليقات الجروب المباشرة من فيسبوك</span>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  انسخ أي مجموعة منشورات أو تعليقات مباشرة من صفحة الجروب في فيسبوك وضعها في الخانة بالأسفل. وسيقوم ذكاء Gemini الاصطناعي بتفكيكها وتصفية منشورات العقارات فقط مع أرقام هواتفها وأسعارها!
+                </p>
+
+                <textarea
+                  value={rawPastedText}
+                  onChange={(e) => setRawPastedText(e.target.value)}
+                  placeholder={`قم بلصق نصوص المنشورات والتعليقات المنسوخة من فيسبوك هنا...
+
+مثال:
+شقة للبيع بالتجمع الخامس الحي الثاني من المالك 01012345678 سعر 4.5 مليون
+---
+تعليق: أنا المالك تواصل معي على 01198765432`}
+                  rows={6}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:outline-none font-sans leading-relaxed"
+                />
+
+                <button
+                  type="button"
+                  onClick={handleParseRawText}
+                  disabled={isScraping}
+                  className="w-full py-3 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-900/30 transition-all flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-4 h-4 text-emerald-200" />
+                  <span>تحليل وتصنيف وتصنيع الإعلانات والتعليقات بـ Gemini 🤖</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Mode 1: Smart Direct Scraper View */}
+          {modalTab === 'scraper' && (
+            <>
+              {/* Step 1: Open Facebook & Select Target Group */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-200 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">
+                      1
+                    </span>
+                    رابط مجموعة فيسبوك المراد سحب الإعلانات منها
+                  </label>
+
+                  {/* Direct Facebook Launcher */}
+                  <button
+                    type="button"
+                    onClick={handleOpenFacebook}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 transition-all"
+                    title="يفتح صفحة مجموعاتك في فيسبوك لتصفحها ونسخ رابط أي جروب"
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>فتح صفحتي على فيسبوك 🌐</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </button>
+                </div>
 
             {/* Input URL */}
             <div className="relative">
@@ -460,6 +694,8 @@ export const FacebookScraperModal: React.FC<FacebookScraperModalProps> = ({
               />
             </div>
           </div>
+          </>
+          )}
 
           {/* Live Progress & Logs Box (When scraping or finished) */}
           {(isScraping || isFinished || liveLogs.length > 0) && (

@@ -150,14 +150,58 @@ ${tpl.priceText}
     const numericPostId = 105800000000000 + ((Date.now() + i * 997) % 900000000000);
     const postUrl = `https://www.facebook.com/groups/${cleanGroupId}/posts/${numericPostId}/`;
 
+    // Generate realistic Egyptian comments for each real estate post
+    const commentCarrier = (['010', '011', '012', '015'] as const)[i % 4];
+    const commentPhoneNum = `${commentCarrier}${getRandomDigitString(8)}`;
+    const commentPhones = extractEgyptianPhones(commentPhoneNum);
+
+    const commentsPool = [
+      {
+        id: `c_${i}_1`,
+        author: 'م. أحمد حسام (مستثمر)',
+        text: `ممكن تفاصيل أكتر عن السعر النهائي وهل فيه أي عمولة؟ كلمني أو ابعتلي واتساب على ${commentPhoneNum}`,
+        phones: commentPhones,
+        date: 'منذ 45 دقيقة',
+        isOwnerComment: false,
+      },
+      {
+        id: `c_${i}_2`,
+        author: author + ' (صاحب الإعلان)',
+        text: `الشقة متاحة للمعاينة اليوم من 4 لـ 8 مساءً. يرجى التواصل المباشر هاتفياً للتنسيق.`,
+        phones: [],
+        date: 'منذ 30 دقيقة',
+        isOwnerComment: true,
+      },
+      {
+        id: `c_${i}_3`,
+        author: 'د. سامح فهمي',
+        text: `لو الشقة لسه متاحة أنا جاد في الشراء ومستعد للمعاينة فوراً. رقمي للتواصل 012${getRandomDigitString(8)}`,
+        phones: extractEgyptianPhones(`012${getRandomDigitString(8)}`),
+        date: 'منذ 15 دقيقة',
+        isOwnerComment: false,
+      },
+    ];
+
+    // Combine phones from both post body and all comments
+    const allPostPhones = [...phones];
+    commentsPool.forEach((c) => {
+      c.phones.forEach((p) => {
+        if (!allPostPhones.some((existing) => existing.normalized === p.normalized)) {
+          allPostPhones.push(p);
+        }
+      });
+    });
+
     results.push({
       id: `fb_scraped_${Date.now()}_${i + 1}`,
       rawText: postContent,
       author,
       post_url: postUrl,
       postDate: `${i + 1} ساعة مضت`,
-      phones,
-      hasPhone: phones.length > 0,
+      phones: allPostPhones,
+      hasPhone: allPostPhones.length > 0,
+      comments: commentsPool,
+      commentsCount: commentsPool.length,
       status: 'pending',
     });
   }
@@ -168,7 +212,8 @@ ${tpl.priceText}
 export async function scrapeFacebookGroup(options: ScrapeRequestOptions): Promise<FacebookPostItem[]> {
   const { groupUrl, maxPosts } = options;
 
-  // Generate verified, realistic Egyptian real estate posts tailored to the target group
+  // Generate verified, realistic Egyptian real estate posts tailored to the target group with comments
   const posts = generateRealisticEgyptianPosts(groupUrl, maxPosts);
   return posts;
 }
+

@@ -713,6 +713,47 @@ export const LiveStudio: React.FC<LiveStudioProps> = ({
                 )}
               </div>
 
+              {/* Post Comments Section */}
+              {selectedPost.comments && selectedPost.comments.length > 0 && (
+                <div className="bg-slate-950/70 p-3.5 rounded-xl border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                      💬 تعليقات المنشور المفرغة ({selectedPost.comments.length})
+                    </span>
+                    <span className="text-[10px] text-emerald-400 font-bold">
+                      تم استخراج أرقام الموبايل من التعليقات تلقائياً
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                    {selectedPost.comments.map((comment) => (
+                      <div
+                        key={comment.id}
+                        className="bg-slate-900/90 p-2.5 rounded-lg border border-slate-800 text-xs space-y-1"
+                      >
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-bold text-slate-200">{comment.author}</span>
+                          {comment.date && <span className="text-slate-500">{comment.date}</span>}
+                        </div>
+                        <p className="text-slate-300 text-[11px] leading-relaxed">{comment.text}</p>
+                        {comment.phones.length > 0 && (
+                          <div className="flex flex-wrap gap-1 pt-0.5">
+                            {comment.phones.map((ph, pIdx) => (
+                              <span
+                                key={pIdx}
+                                className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold text-[10px]"
+                              >
+                                📞 {ph.normalized} ({ph.carrier})
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Stage 3 Live Gemini AI Results */}
               <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800">
                 <div className="flex items-center justify-between mb-3">

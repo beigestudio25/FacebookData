@@ -15,6 +15,15 @@ export interface ExtractedPhone {
   carrier: 'فودافون' | 'أورنج' | 'اتصالات' | 'وي' | 'أخرى';
 }
 
+export interface PostComment {
+  id: string;
+  author: string;
+  text: string;
+  phones: ExtractedPhone[];
+  date?: string;
+  isOwnerComment?: boolean;
+}
+
 export interface FacebookPostItem {
   id: string;
   rawText: string;
@@ -23,6 +32,8 @@ export interface FacebookPostItem {
   postDate?: string;
   phones: ExtractedPhone[];
   hasPhone: boolean;
+  comments?: PostComment[];
+  commentsCount?: number;
   analysis?: AnalysisResult;
   status: 'pending' | 'analyzing' | 'completed' | 'error' | 'skipped_no_phone';
   error?: string;

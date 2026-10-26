@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import { GoogleGenAI, Type } from '@google/genai';
 import { PRIMARY_MODEL, FALLBACK_MODEL } from './src/constants/models.ts';
 import { scrapeFacebookGroup } from './src/utils/scraperEngine.ts';
+import { extractEgyptianPhones } from './src/utils/regex.ts';
 
 // 1. Load .env.local first, then .env
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
@@ -286,6 +287,147 @@ async function startServer() {
       console.error('Batch Analysis Error:', error);
       return res.status(500).json({
         error: 'فشل في معالجة الحزمة',
+        details: error?.message || String(error),
+      });
+    }
+  });
+
+  // API Route: Live Facebook Graph API Fetcher for Group Feed + Comments
+  app.post('/api/facebook/graph-fetch', authMiddleware, rateLimitMiddleware, async (req: Request, res: Response) => {
+    try {
+      const { accessToken, groupIdOrUrl, maxPosts = 25 } = req.body;
+      if (!accessToken || !groupIdOrUrl) {
+        return res.status(400).json({ error: 'رمز الوصول (accessToken) ورابط الجروب مطلوبان' });
+      }
+
+      let cleanGroupId = groupIdOrUrl.trim();
+      if (cleanGroupId.includes('/groups/')) {
+        cleanGroupId = cleanGroupId.split('/groups/')[1]?.split('/')[0]?.split('?')[0] || cleanGroupId;
+      }
+
+      const limit = Math.min(Math.max(Number(maxPosts) || 25, 1), 50);
+      const graphUrl = `https://graph.facebook.com/v19.0/${cleanGroupId}/feed?fields=id,message,created_time,from,comments.limit(20){id,message,created_time,from}&limit=${limit}&access_token=${accessToken}`;
+
+      const fbResponse = await fetch(graphUrl);
+      const fbData = await fbResponse.json();
+
+      if (fbData.error) {
+        return res.status(400).json({
+          error: `خطأ من فيسبوك Graph API: ${fbData.error.message || 'تعذر جلب المنشورات والتعليقات'}`,
+          details: fbData.error,
+        });
+      }
+
+      const feedItems = fbData.data || [];
+      const parsedPosts = [];
+
+      for (let i = 0; i < feedItems.length; i++) {
+        const item = feedItems[i];
+        const postText = item.message || '';
+        if (!postText.trim()) continue;
+
+        const authorName = item.from?.name || 'معلن فيسبوك';
+        const postPhones = extractEgyptianPhones(postText);
+
+        const rawComments = item.comments?.data || [];
+        const parsedComments = rawComments.map((c: any) => {
+          const cText = c.message || '';
+          return {
+            id: c.id || `c_${Date.now()}_${Math.random()}`,
+            author: c.from?.name || 'متابع فيسبوك',
+            text: cText,
+            phones: extractEgyptianPhones(cText),
+            date: c.created_time ? new Date(c.created_time).toLocaleString('ar-EG') : undefined,
+          };
+        });
+
+        // Extract phones from BOTH post text AND comments
+        const allPhones = [...postPhones];
+        parsedComments.forEach((c: any) => {
+          c.phones.forEach((p: any) => {
+            if (!allPhones.some((existing) => existing.normalized === p.normalized)) {
+              allPhones.push(p);
+            }
+          });
+        });
+
+        // Perform Gemini real estate analysis & filtering
+        const analysis = await analyzeSinglePost(postText, PRIMARY_MODEL);
+
+        parsedPosts.push({
+          id: item.id || `fb_graph_${Date.now()}_${i + 1}`,
+          rawText: postText,
+          author: authorName,
+          post_url: `https://www.facebook.com/${item.id}`,
+          postDate: item.created_time ? new Date(item.created_time).toLocaleString('ar-EG') : undefined,
+          phones: allPhones,
+          hasPhone: allPhones.length > 0,
+          comments: parsedComments,
+          commentsCount: parsedComments.length,
+          analysis,
+          status: 'completed',
+        });
+      }
+
+      // Filter only real estate posts (العقارات فقط)
+      const realEstateOnly = parsedPosts.filter((p) => p.analysis?.is_real_estate !== false);
+
+      return res.json({
+        success: true,
+        count: realEstateOnly.length,
+        posts: realEstateOnly,
+      });
+    } catch (error: any) {
+      console.error('Facebook Graph Fetch Error:', error);
+      return res.status(500).json({
+        error: 'فشل في الاتصال بـ Facebook Graph API',
+        details: error?.message || String(error),
+      });
+    }
+  });
+
+  // API Route: Live Raw Copied Facebook Text/HTML & Comments Parser
+  app.post('/api/facebook/parse-raw', authMiddleware, rateLimitMiddleware, async (req: Request, res: Response) => {
+    try {
+      const { rawContent } = req.body;
+      if (!rawContent || typeof rawContent !== 'string') {
+        return res.status(400).json({ error: 'محتوى منشورات وتعليقات فيسبوك مطلوب (rawContent)' });
+      }
+
+      // Split blocks by blank lines or common FB separators
+      const blocks = rawContent
+        .split(/\n{2,}|\n---+\n/)
+        .map((b) => b.trim())
+        .filter((b) => b.length > 15);
+
+      const parsedPosts = [];
+      for (let i = 0; i < blocks.length; i++) {
+        const text = blocks[i];
+        const phones = extractEgyptianPhones(text);
+        const analysis = await analyzeSinglePost(text, PRIMARY_MODEL);
+
+        if (analysis.is_real_estate) {
+          parsedPosts.push({
+            id: `pasted_fb_${Date.now()}_${i + 1}`,
+            rawText: text,
+            author: 'معلن فيسبوك ملقم',
+            phones,
+            hasPhone: phones.length > 0,
+            analysis,
+            status: 'completed',
+          });
+        }
+      }
+
+      return res.json({
+        success: true,
+        count: parsedPosts.length,
+        posts: parsedPosts,
+      });
+    } catch (error: any) {
+      console.error('Facebook Raw Parse Error:', error);
+      return res.status(500).json({
+        error: 'فشل في معالجة النص المنسوخ من فيسبوك',
         details: error?.message || String(error),
       });
     }
