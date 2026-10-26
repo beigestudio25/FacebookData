@@ -23,6 +23,7 @@ import { FacebookPostItem, ExtractedPhone } from '../types';
 import { extractEgyptianPhones } from '../utils/regex';
 import { MOCK_FACEBOOK_POSTS } from '../data/mockPosts';
 import { DataGrid } from './DataGrid';
+import { StatsDashboard } from './StatsDashboard';
 import { PRIMARY_MODEL } from '../constants/models';
 
 interface LiveStudioProps {
@@ -351,6 +352,9 @@ export const LiveStudio: React.FC<LiveStudioProps> = ({
           </button>
         </div>
       )}
+
+      {/* Real-time Stats & Charts Dashboard */}
+      <StatsDashboard posts={posts} />
 
       {/* Top Banner: One-Click Control Panel */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 rounded-3xl border border-slate-800 p-5 sm:p-6 shadow-xl">
