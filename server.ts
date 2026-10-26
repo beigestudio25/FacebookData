@@ -88,15 +88,55 @@ const analysisSchema = {
   ],
 };
 
+function fallbackAnalyzePost(postText: string): RealEstateAnalysis {
+  const isRealEstate = !/وظيفة|مطلوب موظفين|مطلوب عمال|تطبيقات/i.test(postText);
+  const isOwner = /من المالك|المالك مباشرة|شقتي|بدون عمولة|بدون وسطاء/i.test(postText);
+  const isBuyer = /مطلوب للشراء|ابحث عن|مطلوب شقة|مطلوب فيلا/i.test(postText);
+
+  let advertiser_type: 'مالك' | 'وسيط/سمسار' | 'مشتري' | 'غير محدد' = 'وسيط/سمسار';
+  if (isOwner) advertiser_type = 'مالك';
+  else if (isBuyer) advertiser_type = 'مشتري';
+
+  let deal_type: 'إيجار' | 'بيع' | 'مطلوب' | 'تنازل' | 'غير محدد' = 'بيع';
+  if (/للإيجار|إيجار|مفروش/i.test(postText)) deal_type = 'إيجار';
+  else if (/مطلوب/i.test(postText)) deal_type = 'مطلوب';
+  else if (/تنازل/i.test(postText)) deal_type = 'تنازل';
+
+  let property_type = 'شقة';
+  if (/فيلا|تاون هاوس|توين هاوس/i.test(postText)) property_type = 'فيلا';
+  else if (/شاليه/i.test(postText)) property_type = 'شاليه';
+  else if (/محل|تجاري/i.test(postText)) property_type = 'محل تجاري';
+  else if (/مكتب|إداري|عيادة/i.test(postText)) property_type = 'مكتب إداري';
+  else if (/أرض|قطعة أرض/i.test(postText)) property_type = 'أرض سكنية';
+
+  const priceMatch = postText.match(/(\d+[\d,.]*\s*(?:مليون|ألف|ج|جنيه|مصري|كاش))/i);
+  const price = priceMatch ? priceMatch[0] : 'غير مذكور';
+
+  const locationMatch = postText.match(/(التجمع|الشيخ زايد|أكتوبر|المعادي|الشروق|العاصمة|الساحل|السخنة|الرحاب|مدينتي|مدينة نصر|مصر الجديدة)[^,\n.]*/i);
+  const location = locationMatch ? locationMatch[0] : 'غير محدد';
+
+  const summary = `${property_type} ${deal_type} في ${location} ${price !== 'غير مذكور' ? 'بسعر ' + price : ''}`.trim();
+
+  return {
+    is_real_estate: isRealEstate,
+    advertiser_type,
+    deal_type,
+    property_type,
+    price,
+    location,
+    summary,
+  };
+}
+
 async function analyzeSinglePost(
   postText: string,
   modelName: string = PRIMARY_MODEL
 ): Promise<RealEstateAnalysis> {
-  if (!hasGeminiKey) {
-    throw new Error('لم يتم تعيين مفتاح GEMINI_API_KEY بعد! يرجى وضعه في ملف .env (احصل عليه مجاناً من https://aistudio.google.com/app/apikey)');
-  }
+  const geminiApiKey = process.env.GEMINI_API_KEY?.trim();
+  const hasGeminiKey = !!(geminiApiKey && geminiApiKey !== 'MY_GEMINI_API_KEY');
 
-  const prompt = `أنت خبير تحليل بيانات وسوق عقارات في مصر والوطن العربي.
+  if (hasGeminiKey) {
+    const prompt = `أنت خبير تحليل بيانات وسوق عقارات في مصر والوطن العربي.
 قم بتحليل نص المنشور التالي المأخوذ من مجموعة فيسبوك عقارية:
 """
 ${postText}
@@ -112,32 +152,30 @@ ${postText}
 6. location: المنطقة/المدينة/الكمبوند بأعلى دقة ممكنة.
 7. summary: ملخص دقيق للمنشور في جملة واحدة جذابة ومفيدة للمسوقين.`;
 
-  // Candidate models with deduplication: selected -> PRIMARY -> FALLBACK
-  const candidateModels = Array.from(new Set([modelName, PRIMARY_MODEL, FALLBACK_MODEL]));
-  let lastError: any = null;
+    const candidateModels = Array.from(new Set([modelName, PRIMARY_MODEL, FALLBACK_MODEL, 'gemini-3.8-flash', 'gemini-3.1-flash-lite']));
 
-  for (const currentModel of candidateModels) {
-    try {
-      const response = await ai.models.generateContent({
-        model: currentModel,
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: analysisSchema,
-          temperature: 0.1,
-        },
-      });
+    for (const currentModel of candidateModels) {
+      try {
+        const response = await ai.models.generateContent({
+          model: currentModel,
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema: analysisSchema,
+            temperature: 0.1,
+          },
+        });
 
-      const text = response.text?.trim() || '{}';
-      return JSON.parse(text);
-    } catch (err: any) {
-      console.warn(`Model ${currentModel} returned error:`, err?.message || err);
-      lastError = err;
-      // Continue to next fallback model
+        const text = response.text?.trim() || '{}';
+        return JSON.parse(text);
+      } catch (err: any) {
+        console.warn(`Model ${currentModel} returned error:`, err?.message || err);
+      }
     }
   }
 
-  throw lastError || new Error('فشل التحليل بجميع النماذج المتاحة');
+  // Instant local rule-based analysis fallback on missing key or Gemini API timeout
+  return fallbackAnalyzePost(postText);
 }
 
 // In-memory rate limiting map: 30 requests per minute per IP
@@ -253,45 +291,7 @@ async function startServer() {
     }
   });
 
-function fallbackAnalyzePost(postText: string): RealEstateAnalysis {
-  const isRealEstate = !/وظيفة|مطلوب موظفين|مطلوب عمال|تطبيقات/i.test(postText);
-  const isOwner = /من المالك|المالك مباشرة|شقتي|بدون عمولة|بدون وسطاء/i.test(postText);
-  const isBuyer = /مطلوب للشراء|ابحث عن|مطلوب شقة|مطلوب فيلا/i.test(postText);
 
-  let advertiser_type: 'مالك' | 'وسيط/سمسار' | 'مشتري' | 'غير محدد' = 'وسيط/سمسار';
-  if (isOwner) advertiser_type = 'مالك';
-  else if (isBuyer) advertiser_type = 'مشتري';
-
-  let deal_type: 'إيجار' | 'بيع' | 'مطلوب' | 'تنازل' | 'غير محدد' = 'بيع';
-  if (/للإيجار|إيجار|مفروش/i.test(postText)) deal_type = 'إيجار';
-  else if (/مطلوب/i.test(postText)) deal_type = 'مطلوب';
-  else if (/تنازل/i.test(postText)) deal_type = 'تنازل';
-
-  let property_type = 'شقة';
-  if (/فيلا|تاون هاوس|توين هاوس/i.test(postText)) property_type = 'فيلا';
-  else if (/شاليه/i.test(postText)) property_type = 'شاليه';
-  else if (/محل|تجاري/i.test(postText)) property_type = 'محل تجاري';
-  else if (/مكتب|إداري|عيادة/i.test(postText)) property_type = 'مكتب إداري';
-  else if (/أرض|قطعة أرض/i.test(postText)) property_type = 'أرض سكنية';
-
-  const priceMatch = postText.match(/(\d+[\d,.]*\s*(?:مليون|ألف|ج|جنيه|مصري|كاش))/i);
-  const price = priceMatch ? priceMatch[0] : 'غير مذكور';
-
-  const locationMatch = postText.match(/(التجمع|الشيخ زايد|أكتوبر|المعادي|الشروق|العاصمة|الساحل|السخنة|الرحاب|مدينتي|مدينة نصر|مصر الجديدة)[^,\n.]*/i);
-  const location = locationMatch ? locationMatch[0] : 'غير محدد';
-
-  const summary = `${property_type} ${deal_type} في ${location} ${price !== 'غير مذكور' ? 'بسعر ' + price : ''}`.trim();
-
-  return {
-    is_real_estate: isRealEstate,
-    advertiser_type,
-    deal_type,
-    property_type,
-    price,
-    location,
-    summary,
-  };
-}
 
   // API Route: One-click Facebook Scraper endpoint (Zero Code)
   app.post('/api/scraper/start', authMiddleware, rateLimitMiddleware, async (req: Request, res: Response) => {
