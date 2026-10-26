@@ -1,0 +1,6 @@
+{
+  "name": "محلل عقارات فيسبوك الذكي | Facebook Real Estate Scraper & AI Analyzer",
+  "description": "أداة هندسية متكاملة لسحب وتحليل منشورات عقارات مجموعات فيسبوك واستخراج أرقام الهواتف وتصنيف الإعلانات بـ Gemini AI والتصدير إلى Excel/CSV.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
