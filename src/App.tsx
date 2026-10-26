@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { Navbar } from './components/Navbar';
 import { LiveStudio } from './components/LiveStudio';
+import { MapScraper } from './components/MapScraper';
 import { CodeViewer } from './components/CodeViewer';
 import { TechnicalGuide } from './components/TechnicalGuide';
 import { FacebookScraperModal } from './components/FacebookScraperModal';
@@ -57,6 +58,10 @@ export default function App() {
             setPosts={setPosts}
             onOpenFacebookScraper={() => setIsFacebookModalOpen(true)}
           />
+        )}
+
+        {activeTab === 'map' && (
+          <MapScraper />
         )}
 
         {activeTab === 'code' && (

@@ -28,4 +28,4 @@ export interface FacebookPostItem {
   error?: string;
 }
 
-export type ActiveTab = 'studio' | 'code' | 'guide';
+export type ActiveTab = 'studio' | 'map' | 'code' | 'guide';
