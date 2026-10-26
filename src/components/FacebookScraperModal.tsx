@@ -365,119 +365,89 @@ export const FacebookScraperModal: React.FC<FacebookScraperModalProps> = ({
             </div>
           </div>
 
-          {/* Step 2: Settings */}
-          <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 space-y-4">
-            <label className="text-xs font-bold text-slate-200 flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">
-                2
+          {/* Step 2: One-Click Instant Action Buttons */}
+          <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-4">
+            <label className="text-xs font-black text-slate-100 flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">
+                  2
+                </span>
+                اختر سرعة وكمية السحب المطلوبة (اضغط الزر المفضل لديك فقط):
               </span>
-              خيارات السحب والتحليل الذكي
+              <span className="text-[11px] text-emerald-400 font-bold bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-800">
+                تشغيل آلي 100% ⚡
+              </span>
             </label>
 
+            {/* Quick Action Buttons */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Max Posts Selector */}
-              <div className="space-y-1.5">
-                <span className="text-[11px] text-slate-400 block">عدد الإعلانات المستهدفة:</span>
-                <div className="flex items-center gap-1">
-                  {[10, 20, 35, 50].map((num) => (
-                    <button
-                      key={num}
-                      type="button"
-                      onClick={() => setMaxPosts(num)}
-                      disabled={isScraping}
-                      className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${
-                        maxPosts === num
-                          ? 'bg-blue-600 text-white border-blue-500'
-                          : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800'
-                      }`}
-                    >
-                      {num} إعلان
-                    </button>
-                  ))}
+              <button
+                type="button"
+                onClick={() => {
+                  setMaxPosts(10);
+                  handleStartScraping();
+                }}
+                disabled={isScraping}
+                className="p-4 rounded-2xl bg-gradient-to-b from-blue-900/60 to-slate-900 border border-blue-500/50 hover:border-blue-400 text-right transition-all group cursor-pointer shadow-lg active:scale-95"
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="font-extrabold text-sm text-blue-200">
+                    ⚡ سحب سريع (10 إعلانات)
+                  </span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-400 group-hover:animate-ping"></span>
                 </div>
-              </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  سحب فوري لأحدث 10 إعلانات من الجروب المختار خلال ثوانٍ معدودة.
+                </p>
+              </button>
 
-              {/* Scraping Engine */}
-              <div className="space-y-1.5 sm:col-span-2">
-                <span className="text-[11px] text-slate-400 block">نوع محرك السحب:</span>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setScrapingMode('smart_cloud')}
-                    disabled={isScraping}
-                    className={`p-2 rounded-xl text-xs font-bold border text-right transition-all flex flex-col justify-center ${
-                      scrapingMode === 'smart_cloud'
-                        ? 'bg-blue-600/20 border-blue-500 text-blue-300'
-                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800'
-                    }`}
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-                      سحب سحابي فوري (موصى به)
-                    </span>
-                    <span className="text-[9px] font-normal text-slate-400 mt-0.5">
-                      سريع وفوري بدون انتظار تسجيل الدخول
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setScrapingMode('browser_stealth')}
-                    disabled={isScraping}
-                    className={`p-2 rounded-xl text-xs font-bold border text-right transition-all flex flex-col justify-center ${
-                      scrapingMode === 'browser_stealth'
-                        ? 'bg-blue-600/20 border-blue-500 text-blue-300'
-                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800'
-                    }`}
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                      متصفح Playwright خفي
-                    </span>
-                    <span className="text-[9px] font-normal text-slate-400 mt-0.5">
-                      محاكاة متصفح حقيقي بالخلفية
-                    </span>
-                  </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMaxPosts(25);
+                  handleStartScraping();
+                }}
+                disabled={isScraping}
+                className="p-4 rounded-2xl bg-gradient-to-b from-emerald-900/60 to-slate-900 border border-emerald-500/50 hover:border-emerald-400 text-right transition-all group cursor-pointer shadow-lg active:scale-95"
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="font-extrabold text-sm text-emerald-200">
+                    🔥 سحب متوسط (25 إعلان)
+                  </span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 group-hover:animate-ping"></span>
                 </div>
-              </div>
-            </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  تجميع وتصنيف 25 إعلاناً عقارياً واستخراج أرقام الموبايل المباشرة.
+                </p>
+              </button>
 
-            {/* Zero-Code Instant Features Box */}
-            <div className="bg-blue-950/30 border border-blue-800/60 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-extrabold text-blue-200 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-blue-400" />
-                  أداة آلية بنقرة واحدة 100% (دون كتابة أو تشغيل أي أكواد):
-                </span>
-                <span className="text-[10px] text-emerald-400 bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-800 font-bold">
-                  تشغيل أوتوماتيكي فوري ⚡
-                </span>
-              </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                بمجرد اختيار المجموعة والضغط على زر <strong>"🚀 ابدأ السحب التلقائي الآن"</strong> في الأسفل، يقوم النظام آلياً بسحب المنشورات، استخراج أرقام الهواتف، وتصنيف المالك والسمسار بالذكاء الاصطناعي دون الحاجة لتطبيق أي خطوات برمجية.
-              </p>
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={handleStartScraping}
-                  disabled={isScraping}
-                  className="px-4 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-md transition-all flex items-center gap-2"
-                >
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>اضغط هنا لشخصك لبدء السحب الفوري فوراً</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setMaxPosts(50);
+                  handleStartScraping();
+                }}
+                disabled={isScraping}
+                className="p-4 rounded-2xl bg-gradient-to-b from-indigo-900/60 to-slate-900 border border-indigo-500/50 hover:border-indigo-400 text-right transition-all group cursor-pointer shadow-lg active:scale-95"
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="font-extrabold text-sm text-indigo-200">
+                    🚀 سحب شامل (50 إعلان)
+                  </span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-indigo-400 group-hover:animate-ping"></span>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  سحب مكثف للجروب للحصول على أكبر عدد من شقق المالك المباشر.
+                </p>
+              </button>
             </div>
 
             {/* Toggle Gemini Auto Analysis */}
-            <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+            <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-emerald-400" />
-                <span className="text-xs text-slate-300 font-medium">
-                  التحليل التلقائي الفوري بذكاء Gemini ({PRIMARY_MODEL})
-                </span>
-                <span className="text-[10px] text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-800">
-                  تحديد السعر والموقع ونوع العقار تلقائياً
+                <span className="text-xs text-slate-200 font-bold">
+                  تفعيل التحليل الذكي التلقائي (تحديد السعر والموقع والمكان والمالك المباشر)
                 </span>
               </div>
 
@@ -486,7 +456,7 @@ export const FacebookScraperModal: React.FC<FacebookScraperModalProps> = ({
                 checked={autoAnalyzeWithGemini}
                 onChange={(e) => setAutoAnalyzeWithGemini(e.target.checked)}
                 disabled={isScraping}
-                className="w-4 h-4 rounded text-blue-600 accent-blue-600 cursor-pointer"
+                className="w-4.5 h-4.5 rounded text-blue-600 accent-blue-600 cursor-pointer"
               />
             </div>
           </div>
