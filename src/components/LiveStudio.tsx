@@ -352,102 +352,120 @@ export const LiveStudio: React.FC<LiveStudioProps> = ({
         </div>
       )}
 
-      {/* Top Banner: Workflow Overview */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 rounded-2xl border border-slate-800 p-5 shadow-lg">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-              مسار العمل الهندسي المؤتمت (Automated 4-Stage Pipeline)
-            </h2>
-            <p className="text-xs text-slate-400 mt-1 max-w-2xl">
-              سحب منشورات فيسبوك، التنقية بالـ Regex للأرقام المصرية، استخراج البيانات الدلالية بـ Gemini ({PRIMARY_MODEL})، والتصدير المباشر لجدول بيانات CRM.
+      {/* Top Banner: One-Click Control Panel */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 rounded-3xl border border-slate-800 p-5 sm:p-6 shadow-xl">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+              <h2 className="text-lg font-black text-slate-100">
+                لوحة التحكم الذكية والعمليات بنقرة زر 🎯
+              </h2>
+            </div>
+            <p className="text-xs text-slate-400 max-w-xl leading-relaxed">
+              اختر أي زر من الأزرار الملونة بالأسفل لسحب الإعلانات، استخراج أرقام الموبايل، أو تصنيف المالك والسمسار بالذكاء الاصطناعي وتصديرها فوراً إلى Excel.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Primary Big Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
             {/* Direct Facebook Scraper Launcher (Zero Code) */}
             {onOpenFacebookScraper && (
               <button
                 onClick={onOpenFacebookScraper}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-600/30 transition-all border border-blue-400/40 cursor-pointer animate-pulse hover:animate-none"
-                title="سحب إعلانات فيسبوك بضغطة زر واحدة بدون أي برمجة أو بايثون"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-xs font-black bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white shadow-xl shadow-blue-600/30 transition-all border border-blue-400/40 cursor-pointer"
+                title="سحب إعلانات فيسبوك بضغطة زر واحدة بدون أي برمجة"
               >
                 <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                 </svg>
-                <span>🤖 سحب مباشر من فيسبوك</span>
+                <span>🚀 ابدأ سحب إعلانات من فيسبوك</span>
               </button>
             )}
-
-            {/* Import JSON File */}
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 transition-all shadow-sm"
-              title="استيراد ملف JSON ناتج من أداة السحب Playwright"
-            >
-              <Upload className="w-3.5 h-3.5" />
-              استيراد ملف JSON
-            </button>
 
             {/* Batch Analyze */}
             <button
               onClick={() => handleAnalyzeBatch(false)}
               disabled={isAnalyzingBatch || isAnalyzingSingle}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white shadow-md shadow-emerald-900/30 transition-all"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-xs font-black bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white shadow-lg shadow-emerald-950/40 transition-all cursor-pointer"
             >
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="w-4 h-4 text-emerald-300" />
               {isAnalyzingBatch
                 ? `جاري التحليل (${batchProgress?.current}/${batchProgress?.total})...`
-                : `تحليل الحزمة بـ Gemini (${PRIMARY_MODEL})`}
+                : `🤖 تحليل الكل بالذكاء الاصطناعي`}
             </button>
 
-            {/* Retry Failed */}
-            {failedPosts.length > 0 && (
-              <button
-                onClick={() => handleAnalyzeBatch(true)}
-                disabled={isAnalyzingBatch || isAnalyzingSingle}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 transition-all shadow-sm"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                إعادة محاولة الفاشلة ({failedPosts.length})
-              </button>
-            )}
+            {/* Copy All Phones for WhatsApp */}
+            <button
+              onClick={() => {
+                const allPhones = posts
+                  .flatMap((p) => p.phones.map((ph) => ph.normalized))
+                  .filter(Boolean);
+                const unique = Array.from(new Set(allPhones));
+                if (unique.length === 0) {
+                  showToast('error', 'لا توجد أرقام هواتف صالحة للنسخ حالياً.');
+                  return;
+                }
+                navigator.clipboard.writeText(unique.join('\n'));
+                showToast('success', `تم نسخ (${unique.length}) رقم هاتف بنجاح لصقها في أداة الواتساب!`);
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-3 rounded-2xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 transition-all shadow-sm"
+              title="نسخ جميع أرقام هواتف المعالين لاستخدامها في الحملات والإرسال"
+            >
+              <Phone className="w-3.5 h-3.5 text-sky-400" />
+              <span>📋 نسخ الهواتف</span>
+            </button>
+
+            {/* Import JSON File */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-1.5 px-3.5 py-3 rounded-2xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all shadow-sm"
+              title="استيراد ملف JSON جاهز للإعلانات"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span>استيراد ملف</span>
+            </button>
 
             <button
               onClick={handleResetDefaults}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all"
+              className="p-3 rounded-2xl text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700 transition-all"
+              title="استعادة البيانات الافتراضية للتجربة"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
-              استعادة النماذج
+              <RotateCcw className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* 4 Steps Visual Timeline */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 pt-4 border-t border-slate-800/80">
-          <div className="bg-slate-950/50 p-2.5 rounded-xl border border-slate-800">
-            <span className="text-[10px] font-bold text-slate-500 block">المرحلة 1</span>
-            <span className="text-xs font-bold text-slate-200">سحب منشورات فيسبوك</span>
-            <span className="text-[11px] text-slate-400 block mt-0.5">Playwright Automation</span>
+        {/* 3 Simple Visual Steps */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5 pt-4 border-t border-slate-800/80">
+          <div className="bg-slate-950/60 p-3 rounded-2xl border border-slate-800 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 font-black text-sm flex items-center justify-center shrink-0">
+              1
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-200 block">سحب وتصفية الإعلانات</span>
+              <span className="text-[11px] text-slate-400 block">تجميع منشورات الجروب واستخراج الموبايل</span>
+            </div>
           </div>
 
-          <div className="bg-slate-950/50 p-2.5 rounded-xl border border-slate-800">
-            <span className="text-[10px] font-bold text-emerald-500 block">المرحلة 2 (نشط)</span>
-            <span className="text-xs font-bold text-slate-200">فحص أرقام الهواتف وتنقيتها</span>
-            <span className="text-[11px] text-emerald-400 block mt-0.5">Egyptian Regex Engine</span>
+          <div className="bg-slate-950/60 p-3 rounded-2xl border border-slate-800 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 font-black text-sm flex items-center justify-center shrink-0">
+              2
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-200 block">تصنيف Gemini الذكي</span>
+              <span className="text-[11px] text-slate-400 block">تحديد المالك والسمسار والسعر والموقع</span>
+            </div>
           </div>
 
-          <div className="bg-slate-950/50 p-2.5 rounded-xl border border-slate-800">
-            <span className="text-[10px] font-bold text-sky-500 block">المرحلة 3 (نشط)</span>
-            <span className="text-xs font-bold text-slate-200">التحليل الذكي المهيكل</span>
-            <span className="text-[11px] text-sky-400 block mt-0.5">Gemini 3.1 Flash Lite JSON</span>
-          </div>
-
-          <div className="bg-slate-950/50 p-2.5 rounded-xl border border-slate-800">
-            <span className="text-[10px] font-bold text-amber-500 block">المرحلة 4 (نشط)</span>
-            <span className="text-xs font-bold text-slate-200">الحفظ والتصدير التلقائي</span>
-            <span className="text-[11px] text-amber-400 block mt-0.5">Excel (.xlsx) & CSV</span>
+          <div className="bg-slate-950/60 p-3 rounded-2xl border border-slate-800 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 font-black text-sm flex items-center justify-center shrink-0">
+              3
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-200 block">التصدير والواتساب</span>
+              <span className="text-[11px] text-slate-400 block">تحميل ملف Excel أو المراسلة بضغطة زر</span>
+            </div>
           </div>
         </div>
       </div>

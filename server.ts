@@ -370,7 +370,10 @@ function fallbackAnalyzePost(postText: string): RealEstateAnalysis {
   // Vite setup for development or static serving for production
   if (!isProduction) {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: process.env.DISABLE_HMR === 'true' ? false : undefined,
+      },
       appType: 'spa',
     });
     app.use(vite.middlewares);
@@ -382,8 +385,16 @@ function fallbackAnalyzePost(postText: string): RealEstateAnalysis {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server started on http://0.0.0.0:${PORT}`);
+  });
+
+  server.on('error', (err: any) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`⚠️ Port ${PORT} is already in use.`);
+    } else {
+      console.error('Server listen error:', err);
+    }
   });
 }
 

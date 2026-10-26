@@ -15,65 +15,101 @@ import {
 
 export const TechnicalGuide: React.FC = () => {
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
-      {/* Hero Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 p-6 sm:p-8 rounded-3xl border border-slate-800 shadow-2xl">
-        <div className="flex items-center gap-2.5 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
-          <BookOpen className="w-4 h-4" />
-          الدليل الهندسي الشامل لبناء النظام
+    <div className="space-y-8 max-w-5xl mx-auto font-['Cairo',sans-serif]">
+      {/* Non-Technical Quick Start Banner */}
+      <div className="bg-gradient-to-r from-emerald-950/80 via-slate-900 to-slate-900 p-6 sm:p-8 rounded-3xl border border-emerald-500/40 shadow-2xl space-y-4">
+        <div className="flex items-center gap-2.5 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+          <Sparkles className="w-5 h-5 text-emerald-400" />
+          <span>طريقة الاستخدام المبسطة (بدون أي برمجة)</span>
         </div>
         <h2 className="text-2xl sm:text-3xl font-black text-slate-100 leading-tight">
-          معمارية بناء محرك استخراج وتحليل عقارات فيسبوك بالذكاء الاصطناعي
+          كيف تستخدم البرنامج بضغطة زر واحدة؟ 🎯
         </h2>
-        <p className="text-sm text-slate-400 mt-2 leading-relaxed">
-          شرح تحليلي مفصل خطوة بخطوة لبناء خط الأتمتة (End-to-End Automation Pipeline) لمعالجة التحديات التقنية مثل تخطي قيود فيسبوك، تحسين كفاءة وتكلفة استدعاءات Gemini API، وتصدير قواعد بيانات نظيفة لفرق التسويق العقاري.
+        <p className="text-sm text-slate-300 leading-relaxed max-w-3xl">
+          أهلاً بك! لقد تم تصميم هذا البرنامج ليعمل بشكل آلي بالكامل 100%. لا تحتاج لمعرفة أي شيء في البرمجة أو الأكواد. كل ما عليك هو الضغط على الأزرار الظاهرة أمامك:
         </p>
 
-        {/* System Flow Diagram */}
-        <div className="mt-6 p-4 bg-slate-950/80 rounded-2xl border border-slate-800">
-          <span className="text-xs font-bold text-slate-400 block mb-3">
-            مخطط تدفق البيانات (Data Pipeline Architecture):
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-center">
-            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-              <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center justify-center mx-auto mb-1">
-                1
-              </span>
-              <h4 className="font-bold text-xs text-slate-200">Playwright Scraper</h4>
-              <p className="text-[11px] text-slate-400 mt-1">
-                سحب المنشورات مع محاكاة السلوك البشري والكوكيز
-              </p>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+          <div className="bg-slate-950/80 p-4 rounded-2xl border border-blue-500/30 space-y-2">
+            <span className="w-8 h-8 rounded-xl bg-blue-600 text-white font-black text-sm flex items-center justify-center">
+              1
+            </span>
+            <h3 className="font-bold text-sm text-slate-100">اضغط زر "سحب من فيسبوك"</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              اختر المجموعة المراد سحب إعلاناتها من قائمة الجروبات الجاهزة (مثل التجمع أو الشيخ زايد)، أو ضع رابط الجروب واضغط "ابدأ السحب".
+            </p>
+          </div>
 
-            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-              <span className="w-6 h-6 rounded-full bg-teal-500/20 text-teal-400 font-bold text-xs flex items-center justify-center mx-auto mb-1">
-                2
-              </span>
-              <h4 className="font-bold text-xs text-slate-200">Regex & Filtering</h4>
-              <p className="text-[11px] text-slate-400 mt-1">
-                تصفية الهواتف المصرية واستبعاد المنشورات عديمة الفائدة
-              </p>
-            </div>
+          <div className="bg-slate-950/80 p-4 rounded-2xl border border-emerald-500/30 space-y-2">
+            <span className="w-8 h-8 rounded-xl bg-emerald-600 text-white font-black text-sm flex items-center justify-center">
+              2
+            </span>
+            <h3 className="font-bold text-sm text-slate-100">يقوم الذكاء الاصطناعي بالتحليل</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              يقرأ البرنامج الإعلانات تلقائياً، ويستخرج أرقام الهواتف المصرية (+20 / 010)، ويحدد هل المعلن مالك مباشر أم سمسار والسعر المطلوب.
+            </p>
+          </div>
 
-            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-              <span className="w-6 h-6 rounded-full bg-sky-500/20 text-sky-400 font-bold text-xs flex items-center justify-center mx-auto mb-1">
-                3
-              </span>
-              <h4 className="font-bold text-xs text-slate-200">Gemini 3.6 Flash</h4>
-              <p className="text-[11px] text-slate-400 mt-1">
-                استخراج دلالي منظم بصيغة JSON صارمة للمالك والسعر
-              </p>
-            </div>
+          <div className="bg-slate-950/80 p-4 rounded-2xl border border-amber-500/30 space-y-2">
+            <span className="w-8 h-8 rounded-xl bg-amber-600 text-white font-black text-sm flex items-center justify-center">
+              3
+            </span>
+            <h3 className="font-bold text-sm text-slate-100">تصدير إكسيل أو محادثة واتساب</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              اضغط زر "تصدير إكسيل" لتحميل الجدول على جهازك، أو اضغط زر الواتساب 💬 المباشر لمراسلة المالك بضغطة زر واحدة!
+            </p>
+          </div>
+        </div>
+      </div>
 
-            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-              <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 font-bold text-xs flex items-center justify-center mx-auto mb-1">
-                4
-              </span>
-              <h4 className="font-bold text-xs text-slate-200">Pandas & Excel</h4>
-              <p className="text-[11px] text-slate-400 mt-1">
-                تصدير ملفات إكسيل منسقة مع روابط محادثات واتساب
-              </p>
-            </div>
+      {/* Advanced Engineering Guide for Technical Developers */}
+      <div className="bg-slate-900/80 p-6 sm:p-8 rounded-3xl border border-slate-800 shadow-xl space-y-4">
+        <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wider">
+          <BookOpen className="w-4 h-4 text-emerald-400" />
+          تفاصيل معمارية النظام للمطورين (اختر لمعرفة المزيد)
+        </div>
+        <h2 className="text-xl font-bold text-slate-200">
+          كيف يعمل النظام خلف الكواليس؟ (Technical Architecture)
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-center pt-2">
+          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center justify-center mx-auto mb-1">
+              1
+            </span>
+            <h4 className="font-bold text-xs text-slate-200">Playwright Scraper</h4>
+            <p className="text-[11px] text-slate-400 mt-1">
+              سحب المنشورات محاكاة السلوك البشري
+            </p>
+          </div>
+
+          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <span className="w-6 h-6 rounded-full bg-teal-500/20 text-teal-400 font-bold text-xs flex items-center justify-center mx-auto mb-1">
+              2
+            </span>
+            <h4 className="font-bold text-xs text-slate-200">Regex & Filtering</h4>
+            <p className="text-[11px] text-slate-400 mt-1">
+              تصفية أرقام الهواتف المصرية
+            </p>
+          </div>
+
+          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <span className="w-6 h-6 rounded-full bg-sky-500/20 text-sky-400 font-bold text-xs flex items-center justify-center mx-auto mb-1">
+              3
+            </span>
+            <h4 className="font-bold text-xs text-slate-200">Gemini AI Model</h4>
+            <p className="text-[11px] text-slate-400 mt-1">
+              تصنيف المالك والسمسار والسعر
+            </p>
+          </div>
+
+          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 font-bold text-xs flex items-center justify-center mx-auto mb-1">
+              4
+            </span>
+            <h4 className="font-bold text-xs text-slate-200">Excel Export</h4>
+            <p className="text-[11px] text-slate-400 mt-1">
+              تصدير ملفات إكسيل منسقة للـ CRM
+            </p>
           </div>
         </div>
       </div>

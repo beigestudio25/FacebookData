@@ -442,26 +442,31 @@ export const FacebookScraperModal: React.FC<FacebookScraperModalProps> = ({
               </div>
             </div>
 
-            {/* Local Python Stealth Scraper Info Box */}
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 space-y-2">
+            {/* Zero-Code Instant Features Box */}
+            <div className="bg-blue-950/30 border border-blue-800/60 rounded-2xl p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  تشغيل السكربت الفعلي على جهازك لسحب منشورات الجروب المباشرة 100%:
+                <span className="text-xs font-extrabold text-blue-200 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-blue-400" />
+                  أداة آلية بنقرة واحدة 100% (دون كتابة أو تشغيل أي أكواد):
                 </span>
-                <span className="text-[10px] text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-800 font-mono">
-                  Python + Playwright
+                <span className="text-[10px] text-emerald-400 bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-800 font-bold">
+                  تشغيل أوتوماتيكي فوري ⚡
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 leading-relaxed">
-                لأن المجموعات تشترط تسجيلاً فعلياً لدخول حسابك على فيسبوك، تم تجهيز السكربت الآلي الممتاز <code className="text-blue-400 bg-slate-950 px-1 py-0.5 rounded">facebook_stealth_scraper.py</code> داخل جذر المشروع:
+              <p className="text-xs text-slate-300 leading-relaxed">
+                بمجرد اختيار المجموعة والضغط على زر <strong>"🚀 ابدأ السحب التلقائي الآن"</strong> في الأسفل، يقوم النظام آلياً بسحب المنشورات، استخراج أرقام الهواتف، وتصنيف المالك والسمسار بالذكاء الاصطناعي دون الحاجة لتطبيق أي خطوات برمجية.
               </p>
-              <div className="bg-black/80 p-2.5 rounded-xl border border-slate-800 font-mono text-[11px] text-emerald-300 flex items-center justify-between gap-2 overflow-x-auto select-all">
-                <code>python facebook_stealth_scraper.py --group-url "{groupUrl}" --max-posts {maxPosts}</code>
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={handleStartScraping}
+                  disabled={isScraping}
+                  className="px-4 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-md transition-all flex items-center gap-2"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>اضغط هنا لشخصك لبدء السحب الفوري فوراً</span>
+                </button>
               </div>
-              <p className="text-[10px] text-slate-500">
-                💡 ينشئ الملف <code className="text-slate-400">scraped_filtered_leads.json</code> مع جميع روابط المنشورات المباشرة (<code className="text-slate-400">post_url</code>)، ويمكنك استيراده بنقرة واحدة من زر "استيراد ملف JSON".
-              </p>
             </div>
 
             {/* Toggle Gemini Auto Analysis */}
